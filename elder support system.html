@@ -1,0 +1,911 @@
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>介護管理システム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f0f5ff;
+        }
+        .tab-active {
+            background-color: #2563eb;
+            color: white;
+        }
+        .emergency-button {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        /* アクセシビリティ向上のためのスタイル */
+        .btn-large {
+            padding: 1rem 1.5rem;
+            font-size: 1.25rem;
+            border-radius: 0.75rem;
+            min-height: 3.5rem;
+        }
+        .input-large {
+            padding: 1rem;
+            font-size: 1.25rem;
+            border-radius: 0.75rem;
+            min-height: 3.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen">
+        <!-- ログイン画面 -->
+        <div id="login-screen" class="flex flex-col items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-blue-700">介護サポートシステム</h1>
+                    <p class="text-gray-600 mt-2 text-xl">安心な毎日をサポートします</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-xl mb-2" for="username">ユーザーID</label>
+                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           id="username" type="text" placeholder="ユーザーIDを入力">
+                </div>
+                
+                <div class="mb-8">
+                    <label class="block text-gray-700 text-xl mb-2" for="password">パスワード</label>
+                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           id="password" type="password" placeholder="パスワードを入力">
+                </div>
+                
+                <button id="login-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold btn-large transition duration-300 mb-4">
+                    ログイン
+                </button>
+                
+                <div class="text-center mt-6">
+                    <a href="#" id="register-link" class="text-blue-600 hover:text-blue-800 text-xl">新規登録はこちら</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新規登録画面 -->
+        <div id="register-screen" class="hidden flex flex-col items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+                <div class="text-center mb-8">
+                    <h1 class="text-4xl font-bold text-blue-700">新規アカウント登録</h1>
+                    <p class="text-gray-600 mt-2 text-xl">必要情報を入力してください</p>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-xl mb-2" for="new-username">ユーザーID</label>
+                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           id="new-username" type="text" placeholder="希望するユーザーIDを入力">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-xl mb-2" for="new-password">パスワード</label>
+                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           id="new-password" type="password" placeholder="パスワードを入力">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-xl mb-2" for="confirm-password">パスワード（確認）</label>
+                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                           id="confirm-password" type="password" placeholder="パスワードを再入力">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-xl mb-2" for="user-type">ユーザータイプ</label>
+                    <select class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                            id="user-type">
+                        <option value="patient">利用者</option>
+                        <option value="family">家族</option>
+                        <option value="caregiver">介護者</option>
+                    </select>
+                </div>
+                
+                <button id="register-button" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold btn-large transition duration-300 mb-4">
+                    登録する
+                </button>
+                
+                <div class="text-center mt-6">
+                    <a href="#" id="back-to-login" class="text-blue-600 hover:text-blue-800 text-xl">ログイン画面に戻る</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- メイン画面 -->
+        <div id="main-screen" class="hidden">
+            <!-- ヘッダー -->
+            <header class="bg-blue-700 text-white p-4 shadow-md">
+                <div class="container mx-auto flex justify-between items-center">
+                    <h1 class="text-3xl font-bold">介護サポートシステム</h1>
+                    <div class="flex items-center space-x-4">
+                        <span id="user-name" class="text-xl">山田 花子さん</span>
+                        <button id="logout-button" class="bg-blue-800 hover:bg-blue-900 px-4 py-2 rounded-lg text-xl">ログアウト</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 緊急通報ボタン - 常に表示 -->
+            <div class="fixed bottom-6 right-6 z-50">
+                <button id="emergency-button" class="emergency-button bg-red-500 hover:bg-red-600 text-white text-3xl font-bold w-28 h-28 rounded-full shadow-lg flex items-center justify-center">
+                    SOS
+                </button>
+            </div>
+
+            <!-- メインコンテンツ -->
+            <div class="container mx-auto p-4">
+                <!-- タブメニュー -->
+                <div class="flex overflow-x-auto mb-6 bg-white rounded-lg shadow p-2">
+                    <button class="tab-button tab-active px-6 py-4 text-xl font-medium rounded-lg flex-shrink-0 mx-1" data-tab="dashboard">ホーム</button>
+                    <button class="tab-button px-6 py-4 text-xl font-medium rounded-lg flex-shrink-0 mx-1" data-tab="profile">利用者情報</button>
+                    <button class="tab-button px-6 py-4 text-xl font-medium rounded-lg flex-shrink-0 mx-1" data-tab="medication">服薬管理</button>
+                    <button class="tab-button px-6 py-4 text-xl font-medium rounded-lg flex-shrink-0 mx-1" data-tab="schedule">スケジュール</button>
+                    <button class="tab-button px-6 py-4 text-xl font-medium rounded-lg flex-shrink-0 mx-1" data-tab="communication">連絡</button>
+                </div>
+
+                <!-- ダッシュボード -->
+                <div id="dashboard" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- お知らせ -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-3xl font-bold text-blue-700 mb-4">今日のお知らせ</h2>
+                            <div class="space-y-6">
+                                <div class="p-5 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-xl text-yellow-700">朝の薬を服用してください（8:00）</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-5 bg-blue-50 border-l-4 border-blue-400 rounded">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-xl text-blue-700">今日は14:00に病院の予約があります</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-5 bg-green-50 border-l-4 border-green-400 rounded">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-xl text-green-700">娘の佐藤さんが16:00に訪問予定です</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 健康状態 -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-3xl font-bold text-blue-700 mb-4">健康状態</h2>
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">体温</span>
+                                    <span class="text-xl font-medium">36.5°C</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">血圧</span>
+                                    <span class="text-xl font-medium">125/85 mmHg</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">脈拍</span>
+                                    <span class="text-xl font-medium">72 bpm</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xl">最終測定</span>
+                                    <span class="text-xl font-medium">今日 7:30</span>
+                                </div>
+                                <button class="mt-4 w-full bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium btn-large transition duration-300">
+                                    詳細を見る
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 今日の服薬 -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-3xl font-bold text-blue-700 mb-4">今日の服薬</h2>
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <span class="text-xl font-medium">朝の薬</span>
+                                        <p class="text-gray-600 text-lg">8:00</p>
+                                    </div>
+                                    <button class="medication-check bg-white border-2 border-gray-300 hover:border-blue-500 text-blue-700 font-medium py-3 px-6 rounded-lg text-xl transition duration-300">
+                                        未服用
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <span class="text-xl font-medium">昼の薬</span>
+                                        <p class="text-gray-600 text-lg">12:00</p>
+                                    </div>
+                                    <button class="medication-check bg-white border-2 border-gray-300 hover:border-blue-500 text-blue-700 font-medium py-3 px-6 rounded-lg text-xl transition duration-300">
+                                        未服用
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <span class="text-xl font-medium">夜の薬</span>
+                                        <p class="text-gray-600 text-lg">19:00</p>
+                                    </div>
+                                    <button class="medication-check bg-white border-2 border-gray-300 hover:border-blue-500 text-blue-700 font-medium py-3 px-6 rounded-lg text-xl transition duration-300">
+                                        未服用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 今後の予定 -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-3xl font-bold text-blue-700 mb-4">今後の予定</h2>
+                            <div class="space-y-6">
+                                <div class="p-5 bg-gray-50 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xl font-medium">内科検診</span>
+                                            <p class="text-gray-600 text-lg">今日 14:00</p>
+                                        </div>
+                                        <span class="bg-blue-100 text-blue-800 text-lg font-medium px-3 py-1 rounded">病院</span>
+                                    </div>
+                                </div>
+                                <div class="p-5 bg-gray-50 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xl font-medium">家族訪問</span>
+                                            <p class="text-gray-600 text-lg">今日 16:00</p>
+                                        </div>
+                                        <span class="bg-green-100 text-green-800 text-lg font-medium px-3 py-1 rounded">面会</span>
+                                    </div>
+                                </div>
+                                <div class="p-5 bg-gray-50 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xl font-medium">リハビリ</span>
+                                            <p class="text-gray-600 text-lg">明日 10:00</p>
+                                        </div>
+                                        <span class="bg-purple-100 text-purple-800 text-lg font-medium px-3 py-1 rounded">リハビリ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 利用者情報 -->
+                <div id="profile" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-3xl font-bold text-blue-700 mb-6">利用者情報</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 text-xl mb-2" for="full-name">氏名</label>
+                                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           id="full-name" type="text" value="山田 花子">
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 text-xl mb-2" for="age">年齢</label>
+                                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           id="age" type="number" value="78">
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 text-xl mb-2" for="gender">性別</label>
+                                    <select class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                            id="gender">
+                                        <option value="female" selected>女性</option>
+                                        <option value="male">男性</option>
+                                        <option value="other">その他</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 text-xl mb-2" for="blood-type">血液型</label>
+                                    <select class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                            id="blood-type">
+                                        <option value="A">A型</option>
+                                        <option value="B" selected>B型</option>
+                                        <option value="O">O型</option>
+                                        <option value="AB">AB型</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 text-xl mb-2" for="emergency-contact">緊急連絡先</label>
+                                    <input class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                           id="emergency-contact" type="text" value="山田 太郎（息子）: 090-1234-5678">
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 text-xl mb-2" for="allergies">アレルギー情報</label>
+                                    <textarea class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                              id="allergies" rows="3">エビ、カニ、ペニシリン系抗生物質</textarea>
+                                </div>
+                                
+                                <div class="mb-6">
+                                    <label class="block text-gray-700 text-xl mb-2" for="medical-history">既往歴</label>
+                                    <textarea class="w-full input-large border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                              id="medical-history" rows="3">高血圧、糖尿病、2年前に右膝手術</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8">
+                            <button id="save-profile" class="bg-blue-600 hover:bg-blue-700 text-white font-bold btn-large transition duration-300 w-full md:w-auto">
+                                情報を保存
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 服薬管理 -->
+                <div id="medication" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-3xl font-bold text-blue-700 mb-6">服薬管理</h2>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-4">今日の服薬状況</h3>
+                            <div class="space-y-6">
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <span class="text-xl font-medium">朝の薬</span>
+                                        <p class="text-gray-600 text-lg">8:00 - 高血圧薬、糖尿病薬</p>
+                                    </div>
+                                    <button class="medication-check bg-white border-2 border-gray-300 hover:border-blue-500 text-blue-700 font-medium py-3 px-6 rounded-lg text-xl transition duration-300">
+                                        未服用
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <span class="text-xl font-medium">昼の薬</span>
+                                        <p class="text-gray-600 text-lg">12:00 - 糖尿病薬</p>
+                                    </div>
+                                    <button class="medication-check bg-white border-2 border-gray-300 hover:border-blue-500 text-blue-700 font-medium py-3 px-6 rounded-lg text-xl transition duration-300">
+                                        未服用
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-5 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <span class="text-xl font-medium">夜の薬</span>
+                                        <p class="text-gray-600 text-lg">19:00 - 高血圧薬、糖尿病薬、睡眠薬</p>
+                                    </div>
+                                    <button class="medication-check bg-white border-2 border-gray-300 hover:border-blue-500 text-blue-700 font-medium py-3 px-6 rounded-lg text-xl transition duration-300">
+                                        未服用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-4">薬の詳細</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="py-4 px-6 text-left text-xl font-medium text-gray-700">薬名</th>
+                                            <th class="py-4 px-6 text-left text-xl font-medium text-gray-700">用途</th>
+                                            <th class="py-4 px-6 text-left text-xl font-medium text-gray-700">用量</th>
+                                            <th class="py-4 px-6 text-left text-xl font-medium text-gray-700">服用時間</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="py-4 px-6 text-xl">アムロジピン</td>
+                                            <td class="py-4 px-6 text-xl">高血圧治療</td>
+                                            <td class="py-4 px-6 text-xl">5mg 1錠</td>
+                                            <td class="py-4 px-6 text-xl">朝・夜</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-4 px-6 text-xl">メトホルミン</td>
+                                            <td class="py-4 px-6 text-xl">糖尿病治療</td>
+                                            <td class="py-4 px-6 text-xl">250mg 1錠</td>
+                                            <td class="py-4 px-6 text-xl">朝・昼・夜</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-4 px-6 text-xl">ゾルピデム</td>
+                                            <td class="py-4 px-6 text-xl">睡眠導入剤</td>
+                                            <td class="py-4 px-6 text-xl">5mg 1錠</td>
+                                            <td class="py-4 px-6 text-xl">夜のみ</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="mt-8">
+                                <button id="add-medication" class="bg-blue-600 hover:bg-blue-700 text-white font-bold btn-large transition duration-300 w-full md:w-auto">
+                                    薬を追加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- スケジュール管理 -->
+                <div id="schedule" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                            <h2 class="text-3xl font-bold text-blue-700 mb-4 md:mb-0">スケジュール管理</h2>
+                            <button id="add-schedule" class="bg-blue-600 hover:bg-blue-700 text-white font-bold btn-large transition duration-300 w-full md:w-auto">
+                                予定を追加
+                            </button>
+                        </div>
+                        
+                        <!-- カレンダー表示 -->
+                        <div class="mb-8">
+                            <div class="flex justify-between items-center mb-4">
+                                <button id="prev-month" class="text-blue-600 hover:text-blue-800 p-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <h3 id="current-month" class="text-2xl font-semibold">2023年6月</h3>
+                                <button id="next-month" class="text-blue-600 hover:text-blue-800 p-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-7 gap-2 text-center mb-2">
+                                <div class="text-red-500 font-medium text-xl">日</div>
+                                <div class="font-medium text-xl">月</div>
+                                <div class="font-medium text-xl">火</div>
+                                <div class="font-medium text-xl">水</div>
+                                <div class="font-medium text-xl">木</div>
+                                <div class="font-medium text-xl">金</div>
+                                <div class="text-blue-500 font-medium text-xl">土</div>
+                            </div>
+                            
+                            <div id="calendar-days" class="grid grid-cols-7 gap-2">
+                                <!-- カレンダーの日付はJavaScriptで生成 -->
+                            </div>
+                        </div>
+                        
+                        <!-- 予定リスト -->
+                        <div>
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-4">今後の予定</h3>
+                            <div class="space-y-6">
+                                <div class="p-5 bg-gray-50 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xl font-medium">内科検診</span>
+                                            <p class="text-gray-600 text-lg">2023年6月15日 14:00</p>
+                                            <p class="text-gray-600 text-lg mt-2">中央病院 内科 佐藤医師</p>
+                                        </div>
+                                        <span class="bg-blue-100 text-blue-800 text-lg font-medium px-3 py-1 rounded">病院</span>
+                                    </div>
+                                    <div class="mt-4 flex space-x-4">
+                                        <button class="text-blue-600 hover:text-blue-800 font-medium text-xl bg-blue-50 hover:bg-blue-100 py-2 px-4 rounded-lg">編集</button>
+                                        <button class="text-red-600 hover:text-red-800 font-medium text-xl bg-red-50 hover:bg-red-100 py-2 px-4 rounded-lg">削除</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-5 bg-gray-50 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xl font-medium">家族訪問</span>
+                                            <p class="text-gray-600 text-lg">2023年6月15日 16:00</p>
+                                            <p class="text-gray-600 text-lg mt-2">娘の佐藤さん来訪</p>
+                                        </div>
+                                        <span class="bg-green-100 text-green-800 text-lg font-medium px-3 py-1 rounded">面会</span>
+                                    </div>
+                                    <div class="mt-4 flex space-x-4">
+                                        <button class="text-blue-600 hover:text-blue-800 font-medium text-xl bg-blue-50 hover:bg-blue-100 py-2 px-4 rounded-lg">編集</button>
+                                        <button class="text-red-600 hover:text-red-800 font-medium text-xl bg-red-50 hover:bg-red-100 py-2 px-4 rounded-lg">削除</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="p-5 bg-gray-50 rounded-lg">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <span class="text-xl font-medium">リハビリ</span>
+                                            <p class="text-gray-600 text-lg">2023年6月16日 10:00</p>
+                                            <p class="text-gray-600 text-lg mt-2">リハビリセンター 田中理学療法士</p>
+                                        </div>
+                                        <span class="bg-purple-100 text-purple-800 text-lg font-medium px-3 py-1 rounded">リハビリ</span>
+                                    </div>
+                                    <div class="mt-4 flex space-x-4">
+                                        <button class="text-blue-600 hover:text-blue-800 font-medium text-xl bg-blue-50 hover:bg-blue-100 py-2 px-4 rounded-lg">編集</button>
+                                        <button class="text-red-600 hover:text-red-800 font-medium text-xl bg-red-50 hover:bg-red-100 py-2 px-4 rounded-lg">削除</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 連絡機能 -->
+                <div id="communication" class="tab-content hidden">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-3xl font-bold text-blue-700 mb-6">連絡先</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- 家族連絡先 -->
+                            <div class="p-5 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-2xl">
+                                        山
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-2xl font-medium">山田 太郎</p>
+                                        <p class="text-gray-600 text-xl">息子</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button class="call-button flex-1 bg-green-600 hover:bg-green-700 text-white font-bold btn-large transition duration-300 flex items-center justify-center" data-number="09012345678">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                        電話をかける
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="p-5 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-2xl">
+                                        佐
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-2xl font-medium">佐藤 美香</p>
+                                        <p class="text-gray-600 text-xl">娘</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button class="call-button flex-1 bg-green-600 hover:bg-green-700 text-white font-bold btn-large transition duration-300 flex items-center justify-center" data-number="09023456789">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                        電話をかける
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- 介護者・医師連絡先 -->
+                            <div class="p-5 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-2xl">
+                                        鈴
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-2xl font-medium">鈴木 健太</p>
+                                        <p class="text-gray-600 text-xl">介護士</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button class="call-button flex-1 bg-green-600 hover:bg-green-700 text-white font-bold btn-large transition duration-300 flex items-center justify-center" data-number="09034567890">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                        電話をかける
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="p-5 bg-gray-50 rounded-lg">
+                                <div class="flex items-center mb-4">
+                                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-red-700 font-bold text-2xl">
+                                        田
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-2xl font-medium">田中 医師</p>
+                                        <p class="text-gray-600 text-xl">主治医</p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-4">
+                                    <button class="call-button flex-1 bg-green-600 hover:bg-green-700 text-white font-bold btn-large transition duration-300 flex items-center justify-center" data-number="09045678901">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                        </svg>
+                                        電話をかける
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8">
+                            <button id="add-contact" class="bg-blue-600 hover:bg-blue-700 text-white font-bold btn-large transition duration-300 w-full md:w-auto">
+                                連絡先を追加
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 緊急通報モーダル -->
+        <div id="emergency-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h2 class="text-3xl font-bold text-red-600 mb-6">緊急通報</h2>
+                
+                <p class="text-xl mb-6">緊急事態が発生しました。どのような状況ですか？</p>
+                
+                <div class="space-y-6 mb-6">
+                    <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold btn-large transition duration-300">
+                        転倒しました
+                    </button>
+                    <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold btn-large transition duration-300">
+                        体調が急変しました
+                    </button>
+                    <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold btn-large transition duration-300">
+                        その他の緊急事態
+                    </button>
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4">
+                    <button id="cancel-emergency" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold btn-large transition duration-300 w-full">
+                        キャンセル
+                    </button>
+                    <button id="call-emergency" class="bg-red-600 hover:bg-red-700 text-white font-bold btn-large transition duration-300 w-full">
+                        緊急連絡
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 通知モーダル -->
+        <div id="notification-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h2 class="text-3xl font-bold text-blue-700 mb-6">お知らせ</h2>
+                
+                <div id="notification-content" class="text-xl mb-6">
+                    朝の薬を服用する時間です。
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:space-x-4">
+                    <button id="dismiss-notification" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold btn-large transition duration-300 w-full">
+                        あとで
+                    </button>
+                    <button id="acknowledge-notification" class="bg-blue-600 hover:bg-blue-700 text-white font-bold btn-large transition duration-300 w-full">
+                        確認
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 電話をかけるモーダル -->
+        <div id="call-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <h2 class="text-3xl font-bold text-green-600 mb-6">電話をかけています</h2>
+                
+                <div id="call-number" class="text-2xl text-center mb-6">
+                    090-1234-5678
+                </div>
+                
+                <div class="flex justify-center mb-6">
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <button id="end-call" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold btn-large transition duration-300">
+                    通話を終了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // ログイン処理
+            document.getElementById('login-button').addEventListener('click', function() {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-screen').classList.remove('hidden');
+                
+                // デモ用に通知を表示
+                setTimeout(function() {
+                    showNotification('朝の薬を服用する時間です。');
+                }, 3000);
+            });
+            
+            // 新規登録画面表示
+            document.getElementById('register-link').addEventListener('click', function() {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('register-screen').classList.remove('hidden');
+            });
+            
+            // ログイン画面に戻る
+            document.getElementById('back-to-login').addEventListener('click', function() {
+                document.getElementById('register-screen').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+            });
+            
+            // 新規登録処理
+            document.getElementById('register-button').addEventListener('click', function() {
+                document.getElementById('register-screen').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+                alert('アカウントが登録されました。ログインしてください。');
+            });
+            
+            // ログアウト処理
+            document.getElementById('logout-button').addEventListener('click', function() {
+                document.getElementById('main-screen').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+            });
+            
+            // タブ切り替え
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    tabButtons.forEach(btn => btn.classList.remove('tab-active'));
+                    tabContents.forEach(content => content.classList.add('hidden'));
+                    
+                    this.classList.add('tab-active');
+                    document.getElementById(tabId).classList.remove('hidden');
+                });
+            });
+            
+            // 服薬チェック
+            const medicationChecks = document.querySelectorAll('.medication-check');
+            
+            medicationChecks.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.textContent.trim() === '未服用') {
+                        this.textContent = '服用済み';
+                        this.classList.remove('bg-white', 'border-gray-300');
+                        this.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                    } else {
+                        this.textContent = '未服用';
+                        this.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                        this.classList.add('bg-white', 'border-gray-300');
+                    }
+                });
+            });
+            
+            // 緊急通報ボタン
+            document.getElementById('emergency-button').addEventListener('click', function() {
+                document.getElementById('emergency-modal').classList.remove('hidden');
+            });
+            
+            // 緊急通報キャンセル
+            document.getElementById('cancel-emergency').addEventListener('click', function() {
+                document.getElementById('emergency-modal').classList.add('hidden');
+            });
+            
+            // 緊急通報実行
+            document.getElementById('call-emergency').addEventListener('click', function() {
+                document.getElementById('emergency-modal').classList.add('hidden');
+                alert('緊急連絡を送信しました。すぐに対応します。');
+            });
+            
+            // 通知モーダル関連
+            function showNotification(message) {
+                document.getElementById('notification-content').textContent = message;
+                document.getElementById('notification-modal').classList.remove('hidden');
+                
+                // 音声でのアナウンス（実際の実装ではWeb Speech APIなどを使用）
+                if ('speechSynthesis' in window) {
+                    const speech = new SpeechSynthesisUtterance(message);
+                    speech.lang = 'ja-JP';
+                    window.speechSynthesis.speak(speech);
+                }
+            }
+            
+            document.getElementById('dismiss-notification').addEventListener('click', function() {
+                document.getElementById('notification-modal').classList.add('hidden');
+            });
+            
+            document.getElementById('acknowledge-notification').addEventListener('click', function() {
+                document.getElementById('notification-modal').classList.add('hidden');
+            });
+            
+            // カレンダー生成
+            function generateCalendar() {
+                const calendarDays = document.getElementById('calendar-days');
+                calendarDays.innerHTML = '';
+                
+                // 現在の月のカレンダーを生成（簡易版）
+                const daysInMonth = 30; // 6月と仮定
+                const firstDayOfWeek = 4; // 6/1が木曜日と仮定
+                
+                // 前月の日を追加
+                for (let i = 0; i < firstDayOfWeek; i++) {
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'p-3 text-center text-gray-400 text-xl';
+                    dayElement.textContent = 30 - firstDayOfWeek + i + 1;
+                    calendarDays.appendChild(dayElement);
+                }
+                
+                // 当月の日を追加
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayElement = document.createElement('div');
+                    
+                    // 今日（15日と仮定）にはハイライト
+                    if (i === 15) {
+                        dayElement.className = 'p-3 text-center bg-blue-100 rounded-lg font-bold text-blue-700 cursor-pointer hover:bg-blue-200 text-xl';
+                    } else {
+                        dayElement.className = 'p-3 text-center cursor-pointer hover:bg-gray-100 rounded-lg text-xl';
+                    }
+                    
+                    dayElement.textContent = i;
+                    
+                    // 予定がある日には印をつける
+                    if (i === 15 || i === 16) {
+                        const dotElement = document.createElement('div');
+                        dotElement.className = 'w-2 h-2 bg-blue-500 rounded-full mx-auto mt-1';
+                        dayElement.appendChild(dotElement);
+                    }
+                    
+                    calendarDays.appendChild(dayElement);
+                }
+            }
+            
+            generateCalendar();
+            
+            // 電話をかける機能
+            const callButtons = document.querySelectorAll('.call-button');
+            
+            callButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const phoneNumber = this.getAttribute('data-number');
+                    const formattedNumber = phoneNumber.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+                    document.getElementById('call-number').textContent = formattedNumber;
+                    document.getElementById('call-modal').classList.remove('hidden');
+                });
+            });
+            
+            // 通話終了
+            document.getElementById('end-call').addEventListener('click', function() {
+                document.getElementById('call-modal').classList.add('hidden');
+            });
+            
+            // プロフィール保存
+            document.getElementById('save-profile').addEventListener('click', function() {
+                alert('利用者情報が保存されました。');
+            });
+            
+            // 薬の追加
+            document.getElementById('add-medication').addEventListener('click', function() {
+                alert('新しい薬を追加する画面を表示します。');
+            });
+            
+            // 予定の追加
+            document.getElementById('add-schedule').addEventListener('click', function() {
+                alert('新しい予定を追加する画面を表示します。');
+            });
+            
+            // 連絡先の追加
+            document.getElementById('add-contact').addEventListener('click', function() {
+                alert('新しい連絡先を追加する画面を表示します。');
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'951717cbd500d41b',t:'MTc1MDIxMDk3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
